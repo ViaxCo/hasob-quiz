@@ -1,5 +1,9 @@
 import { Box, Heading, Text } from "@chakra-ui/react";
+import { useSelector } from "react-redux";
+import { State } from "../redux/store";
 const Header = () => {
+  const { title, description } = useSelector((state: State) => state.quiz);
+
   return (
     <Box
       bg="blackAlpha.200"
@@ -9,10 +13,12 @@ const Header = () => {
       p={4}
     >
       <Heading as="h1" color="appPurple.600">
-        Quiz Name
+        {title ? title : "Quiz Name"}
       </Heading>
       <Text fontSize="lg">
-        Give a short description of the name and purpose of the quiz
+        {description
+          ? description
+          : "Give a short description of the name and purpose of the quiz"}
       </Text>
     </Box>
   );

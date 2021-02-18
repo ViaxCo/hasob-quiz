@@ -1,10 +1,24 @@
 import { Box, Flex, Text } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
+import { secondsToTimeString } from "../utils";
 
-const Timer = () => {
+type Props = {
+  totalTime: number;
+};
+
+const Timer = ({ totalTime }: Props) => {
   const [seconds, setSeconds] = useState(0);
   const [minutes, setMinutes] = useState(0);
   const [hours, setHours] = useState(0);
+
+  useEffect(() => {
+    const totalTimeString = secondsToTimeString(totalTime);
+    const timeStringArray = totalTimeString.split(":");
+    setSeconds(+timeStringArray[2]);
+    setMinutes(+timeStringArray[1]);
+    setHours(+timeStringArray[0]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [totalTime]);
 
   useEffect(() => {
     const interval = setInterval(() => {

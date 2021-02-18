@@ -13,6 +13,7 @@ import {
   Link,
   Stack,
   Text,
+  useToast,
   VStack,
 } from "@chakra-ui/react";
 import {
@@ -28,7 +29,9 @@ import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 import { useState } from "react";
 import * as Yup from "yup";
 import { Link as RouterLink } from "react-router-dom";
-import { capitalizeFirstLetter } from "../utils/capitalizeFirstLetter";
+import { capitalizeFirstLetter, history } from "../utils";
+import { useDispatch } from "react-redux";
+import { signup } from "../redux/features/user/userSlice";
 
 // Give the components chakra props
 export const FbIcon = chakra(FaFacebook);
@@ -50,6 +53,8 @@ const InvisibleEye = chakra(AiFillEyeInvisible);
 const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const toast = useToast();
+  const dispatch = useDispatch();
 
   const validationSchema = Yup.object({
     firstName: Yup.string()
@@ -60,12 +65,48 @@ const Signup = () => {
       .required("Required"),
     email: Yup.string().email("Invalid email address").required("Required"),
     password: Yup.string()
-      .min(8, "Must be at least 8 characters")
+      .min(6, "Must be at least 6 characters")
       .required("Required"),
     confirmPassword: Yup.string()
       .oneOf([Yup.ref("password"), null], "Passwords must match")
       .required("Required"),
   });
+
+  const handleSubmit = async (
+    values: Values,
+    actions: FormikHelpers<Values>
+  ) => {
+    const firstName = capitalizeFirstLetter(values.firstName);
+    const lastName = capitalizeFirstLetter(values.lastName);
+    const newUser = {
+      firstName,
+      lastName,
+      email: values.email,
+      password: values.password,
+      password_confirmation: values.confirmPassword,
+    };
+    const res: any = await dispatch(signup(newUser));
+    if (res.message) {
+      toast({
+        title: "Successfully registered",
+        status: "success",
+        duration: 2500,
+        isClosable: true,
+        position: "top",
+      });
+      history.push("/login");
+    }
+    if (res.error) {
+      toast({
+        title: res.error,
+        status: "error",
+        duration: 2500,
+        isClosable: true,
+        position: "top",
+      });
+      actions.setSubmitting(false);
+    }
+  };
 
   return (
     <Formik
@@ -76,24 +117,11 @@ const Signup = () => {
         password: "",
         confirmPassword: "",
       }}
-      onSubmit={(values: Values, actions: FormikHelpers<Values>) => {
-        setTimeout(() => {
-          const firstName = capitalizeFirstLetter(values.firstName);
-          const lastName = capitalizeFirstLetter(values.lastName);
-          console.log(`
-          firstName: ${firstName}
-          lastName: ${lastName}
-          email: ${values.email}
-          password: ${values.password}
-          `);
-          actions.setSubmitting(false);
-          actions.resetForm();
-        }, 2000);
-      }}
+      onSubmit={handleSubmit}
       validationSchema={validationSchema}
     >
       {props => (
-        <Center h="100vh" w="100vw">
+        <Center minH="100vh" minW="100vw">
           <Form
             action="/"
             w="100%"
@@ -102,8 +130,20 @@ const Signup = () => {
             pt={6}
             pb={12}
             boxShadow="lg"
+            border="1px solid"
+            borderColor="blackAlpha.100"
           >
             <VStack spacing={6}>
+              <Link
+                as={RouterLink}
+                to="/"
+                _hover={{ textDecoration: "none", color: "appPurple.600" }}
+                fontWeight="bold"
+                fontSize="lg"
+                alignSelf="flex-start"
+              >
+                <Button>Quiz App</Button>
+              </Link>
               <Heading
                 fontSize="2xl"
                 textTransform="uppercase"
@@ -333,7 +373,8 @@ const Signup = () => {
                 <Link
                   as={RouterLink}
                   to="/login"
-                  _hover={{ textDecoration: "none" }}
+                  _hover={{ textDecoration: "none", color: "appPurple.600" }}
+                  _active={{ color: "appPurple.700" }}
                   color="appPurple.500"
                   fontWeight="bold"
                   ml={2}

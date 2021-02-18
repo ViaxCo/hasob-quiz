@@ -14,14 +14,15 @@ import {
   InputRightElement,
   Link,
   Text,
+  useToast,
   VStack,
 } from "@chakra-ui/react";
 import {
   Formik,
   Form as FormikForm,
   Field,
-  FormikHelpers,
   FieldProps,
+  FormikHelpers,
 } from "formik";
 import { FaFacebook } from "react-icons/fa";
 import { BiExit } from "react-icons/bi";
@@ -29,6 +30,8 @@ import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 import { useState } from "react";
 import * as Yup from "yup";
 import { Link as RouterLink } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { login } from "../redux/features/user/userSlice";
 
 // Give the components chakra props
 export const FbIcon = chakra(FaFacebook);
@@ -46,27 +49,43 @@ const InvisibleEye = chakra(AiFillEyeInvisible);
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const toast = useToast();
+  const dispatch = useDispatch();
 
   const validationSchema = Yup.object({
     email: Yup.string().email("Invalid email address").required("Required"),
     password: Yup.string()
-      .min(8, "Must be at least 8 characters")
+      .min(6, "Must be at least 6 characters")
       .required("Required"),
   });
+
+  const handleSubmit = async (
+    values: Values,
+    actions: FormikHelpers<Values>
+  ) => {
+    const res: any = await dispatch(
+      login({ email: values.email, password: values.password })
+    );
+    if (res.error) {
+      toast({
+        title: "The email or password you've entered is incorrect",
+        status: "error",
+        duration: 2500,
+        isClosable: true,
+        position: "top",
+      });
+      actions.setSubmitting(false);
+    }
+  };
 
   return (
     <Formik
       initialValues={{ email: "", password: "" }}
-      onSubmit={(values: Values, actions: FormikHelpers<Values>) => {
-        setTimeout(() => {
-          actions.setSubmitting(false);
-          actions.resetForm();
-        }, 2000);
-      }}
+      onSubmit={handleSubmit}
       validationSchema={validationSchema}
     >
       {props => (
-        <Center h="100vh" w="100vw">
+        <Center minH="100vh" minW="100vw">
           <Form
             action="/"
             w="100%"
@@ -75,10 +94,20 @@ const Login = () => {
             pt={6}
             pb={12}
             boxShadow="lg"
-            // m="auto"
-            // mt={{ base: "130px", smallTablet: "152px" }}
+            border="1px solid"
+            borderColor="blackAlpha.100"
           >
             <VStack spacing={8}>
+              <Link
+                as={RouterLink}
+                to="/"
+                _hover={{ textDecoration: "none", color: "appPurple.600" }}
+                fontWeight="bold"
+                fontSize="lg"
+                alignSelf="flex-start"
+              >
+                <Button>Quiz App</Button>
+              </Link>
               <Heading
                 fontSize="2xl"
                 textTransform="uppercase"
@@ -207,7 +236,8 @@ const Login = () => {
                 <Link
                   as={RouterLink}
                   to="/signup"
-                  _hover={{ textDecoration: "none" }}
+                  _hover={{ textDecoration: "none", color: "appPurple.600" }}
+                  _active={{ color: "appPurple.700" }}
                   color="appPurple.500"
                   fontWeight="bold"
                   ml={2}

@@ -1,28 +1,68 @@
-import { HashRouter as Router, Route, Switch } from "react-router-dom";
-import CreateQuiz from "./pages/CreateQuiz";
-import Home from "./pages/Home";
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
-import StartQuiz from "./pages/StartQuiz";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { Router, Redirect, Route, Switch } from "react-router-dom";
+import {
+  CreateQuestion,
+  Home,
+  Login,
+  Questions,
+  Signup,
+  StartQuiz,
+} from "./pages";
+import { getQuiz } from "./redux/features/quiz/quizSlice";
+import { State } from "./redux/store";
+import { history } from "./utils";
 
 const App = () => {
+  const { isAuthenticated, role } = useSelector((state: State) => state.user);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(getQuiz());
+  }, [dispatch]);
+
   return (
-    <Router>
+    <Router history={history}>
       <Switch>
         <Route exact path="/">
-          <Home />
+          {isAuthenticated && role === "Admin" ? (
+            <Redirect to="/questions" />
+          ) : (
+            <Home />
+          )}
         </Route>
         <Route path="/login">
-          <Login />
+          {isAuthenticated ? <Redirect to="/" /> : <Login />}
         </Route>
         <Route path="/signup">
-          <Signup />
+          {isAuthenticated ? <Redirect to="/" /> : <Signup />}
         </Route>
         <Route path="/start-quiz">
-          <StartQuiz />
+          {isAuthenticated && role === "User" ? (
+            <StartQuiz />
+          ) : isAuthenticated && role === "Admin" ? (
+            <Redirect to="/" />
+          ) : (
+            <Redirect to="/login" />
+          )}
         </Route>
-        <Route path="/create-quiz">
-          <CreateQuiz />
+        <Route path="/create-question">
+          {isAuthenticated && role === "Admin" ? (
+            <CreateQuestion />
+          ) : isAuthenticated && role === "User" ? (
+            <Redirect to="/" />
+          ) : (
+            <Redirect to="/login" />
+          )}
+        </Route>
+        <Route path="/questions">
+          {isAuthenticated && role === "Admin" ? (
+            <Questions />
+          ) : isAuthenticated && role === "User" ? (
+            <Redirect to="/" />
+          ) : (
+            <Redirect to="/login" />
+          )}
         </Route>
       </Switch>
     </Router>

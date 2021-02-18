@@ -14,14 +14,18 @@ import {
   StackDivider,
   useDisclosure,
   Stack,
+  IconButton,
 } from "@chakra-ui/react";
-import { useState } from "react";
-import Header from "../components/Header";
+import { useRef, useState } from "react";
+import { Header, AddTimer } from "../components";
 import { GrClose } from "react-icons/gr";
-import { AiFillHome } from "react-icons/ai";
+import { AiFillHome, AiFillEdit } from "react-icons/ai";
 import { IoMdTrash } from "react-icons/io";
 import { MdTimer } from "react-icons/md";
-import AddTimer from "../components/AddTimer";
+import { timeStringToSeconds, history } from "../utils";
+import { useDispatch, useSelector } from "react-redux";
+import { addQuestion } from "../redux/features/quiz/quizSlice";
+import { State } from "../redux/store";
 
 // Give component chakra props
 export const CloseIcon = chakra(GrClose);
@@ -29,14 +33,74 @@ const HomeIcon = chakra(AiFillHome);
 const TrashIcon = chakra(IoMdTrash);
 export const TimerIcon = chakra(MdTimer);
 
-const CreateQuiz = () => {
+const CreateQuestion = () => {
   const [question, setQuestion] = useState("");
   const [options, setOptions] = useState<string[]>([]);
   const [questionInputvalue, setQuestionInputValue] = useState("");
   const [optionsInputvalue, setOptionsInputValue] = useState("");
   const [radioValue, setRadioValue] = useState<string | number>("");
+  const [timeString, setTimeString] = useState("");
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const dispatch = useDispatch();
+
+  const optionInputRef = useRef<HTMLInputElement>(null);
+  const questionInputRef = useRef<HTMLInputElement>(null);
+
+  const submitting = useSelector((state: State) => state.quiz.submitting);
+
+  const handleSubmit = () => {
+    const answers = options.map(option => ({
+      answer: option,
+      correct: radioValue === option,
+    }));
+    const time = timeStringToSeconds(timeString);
+    if (!question) {
+      toast({
+        title: "Please input question",
+        status: "warning",
+        duration: 2500,
+        isClosable: true,
+      });
+    } else if (options.length < 4) {
+      toast({
+        title: "Please set up to 4 options",
+        status: "warning",
+        duration: 2500,
+        isClosable: true,
+      });
+    } else if (!radioValue) {
+      toast({
+        title: "Please select a correct answer",
+        status: "warning",
+        duration: 2500,
+        isClosable: true,
+      });
+    } else if (!timeString) {
+      toast({
+        title: "Please set timer",
+        status: "warning",
+        duration: 2500,
+        isClosable: true,
+      });
+    } else if (time === 0) {
+      toast({
+        title: "Please set timer of at least 1 second",
+        status: "warning",
+        duration: 2500,
+        isClosable: true,
+      });
+    } else {
+      dispatch(
+        addQuestion({
+          question,
+          answers,
+          time,
+        })
+      );
+    }
+  };
+
   return (
     <Flex
       direction="column"
@@ -46,7 +110,7 @@ const CreateQuiz = () => {
       py={12}
       px={4}
     >
-      <Box maxW="600px">
+      <Box maxW="540px" w="100%">
         <Header />
         <Flex
           direction="column"
@@ -59,36 +123,58 @@ const CreateQuiz = () => {
           pb={1}
           mt={7}
         >
-          <Box
-            bg="whiteAlpha.700"
-            borderRadius="lg"
-            pt={4}
-            pr={4}
-            pl={2}
-            pb={2}
-            mb={4}
-          >
-            <Input
-              variant="flushed"
-              placeholder="Input Question"
-              borderColor="gray.600"
-              _placeholder={{
-                color: "gray.600",
-                opacity: 1,
-              }}
-              value={questionInputvalue}
-              onChange={e => setQuestionInputValue(e.target.value)}
-              onKeyUp={e => {
-                if (e.key === "Enter" || e.code === "13") {
-                  e.preventDefault();
-                  setQuestionInputValue("");
-                  setQuestion(questionInputvalue);
-                }
-              }}
-            />
-          </Box>
+          <Flex mb={4} w="100%" align="center">
+            <Box
+              bg="whiteAlpha.700"
+              borderRadius="lg"
+              pt={4}
+              pr={4}
+              pl={2}
+              pb={2}
+              flex={1}
+            >
+              <Input
+                ref={questionInputRef}
+                variant="flushed"
+                placeholder="Input Question"
+                borderColor="gray.600"
+                _placeholder={{
+                  color: "gray.600",
+                  opacity: 1,
+                }}
+                value={questionInputvalue}
+                onChange={e => setQuestionInputValue(e.target.value)}
+                onKeyUp={e => {
+                  if (e.key === "Enter" || e.code === "13") {
+                    e.preventDefault();
+                    setQuestionInputValue("");
+                    setQuestion(questionInputvalue);
+                    optionInputRef.current!.focus();
+                  }
+                }}
+              />
+            </Box>
+            {timeString && (
+              <Box ml={4}>
+                <Text fontSize="lg" fontWeight="semibold">
+                  {timeString}
+                </Text>
+              </Box>
+            )}
+          </Flex>
           <Text mb={4} fontWeight="medium" fontSize="lg" wordBreak="break-word">
             {question}
+            {question && (
+              <IconButton
+                aria-label="Edit Question"
+                variant="link"
+                onClick={() => {
+                  setQuestionInputValue(question);
+                  questionInputRef.current!.focus();
+                }}
+                icon={<AiFillEdit />}
+              />
+            )}
           </Text>
           <RadioGroup onChange={setRadioValue} value={radioValue}>
             <VStack align="flex-start">
@@ -97,7 +183,7 @@ const CreateQuiz = () => {
                   key={i}
                   colorScheme="appPurple"
                   borderColor="appPurple.500"
-                  value={(i + 1).toString()}
+                  value={option}
                 >
                   {option}
                 </Radio>
@@ -106,6 +192,7 @@ const CreateQuiz = () => {
           </RadioGroup>
           <InputGroup>
             <Input
+              ref={optionInputRef}
               variant="flushed"
               placeholder="Add option"
               borderColor="gray.600"
@@ -132,9 +219,8 @@ const CreateQuiz = () => {
                   setOptionsInputValue("");
                   toast({
                     title: "You cannot add more than 4 options",
-                    //   description: "We've created your account for you.",
                     status: "warning",
-                    duration: 1500,
+                    duration: 2500,
                     isClosable: true,
                   });
                 }
@@ -162,6 +248,8 @@ const CreateQuiz = () => {
             alignSelf="flex-end"
             mt={3}
             mb={5}
+            onClick={handleSubmit}
+            isLoading={submitting}
           >
             Submit
           </Button>
@@ -195,6 +283,7 @@ const CreateQuiz = () => {
               alignItems="center"
               textAlign="center"
               w={24}
+              onClick={() => history.push("/questions")}
             >
               <HomeIcon fontSize="1.7rem" color="grey" className="icons" />
               <Text>All Questions</Text>
@@ -241,11 +330,16 @@ const CreateQuiz = () => {
               <Text>Set Timer</Text>
             </Button>
           </Stack>
-          <AddTimer isOpen={isOpen} onClose={onClose} />
+          <AddTimer
+            isOpen={isOpen}
+            onClose={onClose}
+            timeString={timeString}
+            setTimeString={setTimeString}
+          />
         </Flex>
       </Box>
     </Flex>
   );
 };
 
-export default CreateQuiz;
+export default CreateQuestion;

@@ -10,18 +10,19 @@ import {
   Text,
   IconButton,
 } from "@chakra-ui/react";
-import { CloseIcon, TimerIcon } from "../pages/CreateQuiz";
+import { CloseIcon, TimerIcon } from "../pages/CreateQuestion";
 import { TimePicker } from "antd";
 import "antd/dist/antd.css";
-import { useState } from "react";
-import moment, { Moment } from "moment";
+import { Dispatch, SetStateAction, useState } from "react";
+import { Moment } from "moment";
 
 type Props = {
   isOpen: boolean;
   onClose: () => void;
+  timeString: string;
+  setTimeString: Dispatch<SetStateAction<string>>;
 };
-const AddTimer = ({ isOpen, onClose }: Props) => {
-  const [value, setValue] = useState("");
+const AddTimer = ({ isOpen, onClose, timeString, setTimeString }: Props) => {
   const [time, setTime] = useState<Moment>();
   return (
     <Modal isOpen={isOpen} onClose={onClose} isCentered>
@@ -49,14 +50,13 @@ const AddTimer = ({ isOpen, onClose }: Props) => {
         </ModalHeader>
         <ModalBody p={3}>
           <TimePicker
-            defaultValue={moment("00:10:00", "HH:mm:ss")}
             showNow={false}
             value={time}
             size="large"
             style={{ width: "100%" }}
             onChange={(time, timeString) => {
               setTime(time!);
-              setValue(timeString);
+              setTimeString(timeString);
             }}
           />
         </ModalBody>
@@ -80,7 +80,7 @@ const AddTimer = ({ isOpen, onClose }: Props) => {
             _active={{ bg: "gray.200" }}
             borderRadius="lg"
             boxShadow="md"
-            onClick={onClose}
+            onClick={timeString ? onClose : undefined}
           >
             Set
           </Button>
