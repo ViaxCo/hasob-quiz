@@ -1,8 +1,15 @@
 import { Box, Heading, Text } from "@chakra-ui/react";
-import { useSelector } from "react-redux";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { getQuiz } from "../redux/features/quiz/quizSlice";
 import { State } from "../redux/store";
 const Header = () => {
   const { title, description } = useSelector((state: State) => state.quiz);
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(getQuiz());
+  }, [dispatch]);
 
   return (
     <Box

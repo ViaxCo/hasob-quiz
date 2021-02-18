@@ -1,5 +1,4 @@
-import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { Router, Redirect, Route, Switch } from "react-router-dom";
 import {
   CreateQuestion,
@@ -9,17 +8,11 @@ import {
   Signup,
   StartQuiz,
 } from "./pages";
-import { getQuiz } from "./redux/features/quiz/quizSlice";
 import { State } from "./redux/store";
 import { history } from "./utils";
 
 const App = () => {
   const { isAuthenticated, role } = useSelector((state: State) => state.user);
-  const dispatch = useDispatch();
-
-  useEffect(() => {
-    dispatch(getQuiz());
-  }, [dispatch]);
 
   return (
     <Router history={history}>
