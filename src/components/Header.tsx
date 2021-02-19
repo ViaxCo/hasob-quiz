@@ -4,12 +4,14 @@ import { useDispatch, useSelector } from "react-redux";
 import { getQuiz } from "../redux/features/quiz/quizSlice";
 import { State } from "../redux/store";
 const Header = () => {
-  const { title, description } = useSelector((state: State) => state.quiz);
+  const { title, description, isLoading } = useSelector(
+    (state: State) => state.quiz
+  );
   const dispatch = useDispatch();
 
   useEffect(() => {
-    dispatch(getQuiz());
-  }, [dispatch]);
+    if (isLoading === null) dispatch(getQuiz());
+  }, [dispatch, isLoading]);
 
   return (
     <Box
