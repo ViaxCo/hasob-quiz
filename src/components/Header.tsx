@@ -7,11 +7,14 @@ const Header = () => {
   const { title, description, isLoading } = useSelector(
     (state: State) => state.quiz
   );
+  const isAuthenticated = useSelector(
+    (state: State) => state.user.isAuthenticated
+  );
   const dispatch = useDispatch();
 
   useEffect(() => {
-    if (isLoading === null) dispatch(getQuiz());
-  }, [dispatch, isLoading]);
+    if (isAuthenticated && isLoading === null) dispatch(getQuiz());
+  }, [dispatch, isLoading, isAuthenticated]);
 
   return (
     <Box

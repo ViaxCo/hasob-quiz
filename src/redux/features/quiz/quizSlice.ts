@@ -55,8 +55,10 @@ export const addQuestion = createAsyncThunk(
       );
       console.log(res);
       const { question, message } = res.data;
-      if (message === "Question and answers created successfully")
+      if (message === "Question and answers created successfully") {
+        history.push("/questions");
         return question;
+      }
     } catch (error) {
       console.log({ ...error });
       if (error.response.data.status === "Token is Expired") dispatch(logout());
@@ -75,7 +77,7 @@ const quizSlice = createSlice({
     submitting: false,
   } as QuizSlice,
   reducers: {},
-  extraReducers: builder => {
+  extraReducers: (builder) => {
     // getQuiz
     builder.addCase(getQuiz.pending, (state, action) => {
       if (state.questions.length === 0) state.isLoading = true;
@@ -94,7 +96,6 @@ const quizSlice = createSlice({
     builder.addCase(addQuestion.fulfilled, (state, { payload: question }) => {
       state.submitting = false;
       state.questions.push(question);
-      history.push("/questions");
     });
   },
 });
