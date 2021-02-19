@@ -4,12 +4,17 @@ import { useDispatch, useSelector } from "react-redux";
 import { getQuiz } from "../redux/features/quiz/quizSlice";
 import { State } from "../redux/store";
 const Header = () => {
-  const { title, description } = useSelector((state: State) => state.quiz);
+  const { title, description, isLoading } = useSelector(
+    (state: State) => state.quiz
+  );
+  const isAuthenticated = useSelector(
+    (state: State) => state.user.isAuthenticated
+  );
   const dispatch = useDispatch();
 
   useEffect(() => {
-    dispatch(getQuiz());
-  }, [dispatch]);
+    if (isAuthenticated && isLoading === null) dispatch(getQuiz());
+  }, [dispatch, isLoading, isAuthenticated]);
 
   return (
     <Box
