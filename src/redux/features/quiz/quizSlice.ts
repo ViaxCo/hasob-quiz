@@ -31,7 +31,7 @@ export type QuizSlice = {
 
 export const getQuiz = createAsyncThunk(
   "quiz/getQuiz",
-  async (_, { dispatch }) => {
+  async (_, { dispatch, rejectWithValue }) => {
     try {
       const res = await axios.get("https://hasquiz-api.herokuapp.com/api/quiz");
       console.log(res);
@@ -40,14 +40,16 @@ export const getQuiz = createAsyncThunk(
       return data[0];
     } catch (error) {
       console.log({ ...error });
+      if (!error.response) throw error;
       if (error.response.data.status === "Token is Expired") dispatch(logout());
+      return rejectWithValue(error.response.data);
     }
   }
 );
 
 export const addQuestion = createAsyncThunk(
   "quiz/addQuestion",
-  async (newQuestion: QuestionType, { dispatch }) => {
+  async (newQuestion: QuestionType, { dispatch, rejectWithValue }) => {
     try {
       const res = await axios.post(
         "https://hasquiz-api.herokuapp.com/api/questions",
@@ -61,7 +63,9 @@ export const addQuestion = createAsyncThunk(
       }
     } catch (error) {
       console.log({ ...error });
+      if (!error.response) throw error;
       if (error.response.data.status === "Token is Expired") dispatch(logout());
+      return rejectWithValue(error.response.data);
     }
   }
 );
@@ -74,7 +78,7 @@ const quizSlice = createSlice({
     questions: [] as QuestionType[],
     totalTime: 0,
     isLoading: null,
-    submitting: false,
+    submitting: false
   } as QuizSlice,
   reducers: {},
   extraReducers: (builder) => {
@@ -89,6 +93,10 @@ const quizSlice = createSlice({
       state.questions = quiz.questions;
       state.totalTime = quiz.totalTime;
     });
+    builder.addCase(getQuiz.rejected, (state, action) => {
+      console.log("error:", action.error);
+      console.log("error payload:", action.payload);
+    });
     // addQuestion
     builder.addCase(addQuestion.pending, (state, action) => {
       state.submitting = true;
@@ -97,7 +105,11 @@ const quizSlice = createSlice({
       state.submitting = false;
       state.questions.push(question);
     });
-  },
+    builder.addCase(addQuestion.rejected, (state, action) => {
+      console.log("error:", action.error);
+      console.log("error payload:", action.payload);
+    });
+  }
 });
 
 export default quizSlice.reducer;
