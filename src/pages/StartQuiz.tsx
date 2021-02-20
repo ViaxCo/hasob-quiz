@@ -7,27 +7,26 @@ import {
   HStack,
   Text,
   Spinner,
+  Heading
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { Header, Question, Timer } from "../components";
 import { BiArrowBack } from "react-icons/bi";
-import { useSelector } from "react-redux";
-import { State } from "../redux/store";
+import { useAppSelector } from "../redux/hooks";
 import { QuestionType } from "../redux/features/quiz/quizSlice";
 
 // Give component chakra props
 const BackArrow = chakra(BiArrowBack);
 
 const StartQuiz = () => {
-  const { questions, totalTime } = useSelector((state: State) => state.quiz);
+  const { questions, totalQuestions, totalTime } = useAppSelector(
+    (state) => state.quiz.quiz
+  );
+  const { isLoading } = useAppSelector((state) => state.quiz);
 
-  // const data = new Array(10);
-  // for (let i = 0; i < 10; i++) {
-  //   data[i] = i;
-  // }
   const questionsPerPage = 4;
-  // const totalPages = Math.ceil(data.length / questionsPerPage);
-  const totalPages = Math.ceil(questions.length / questionsPerPage);
+  const totalPages =
+    questions && Math.ceil(questions.length / questionsPerPage);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [currentQuestions, setCurrentQuestions] = useState<QuestionType[]>([]);
@@ -35,19 +34,20 @@ const StartQuiz = () => {
   useEffect(() => {
     const indexOfLastQuestion = currentPage * questionsPerPage;
     const indexOfFirstQuestion = indexOfLastQuestion - questionsPerPage;
-    // setCurrentQuestions(data.slice(indexOfFirstQuestion, indexOfLastQuestion));
-    setCurrentQuestions(
-      questions.slice(indexOfFirstQuestion, indexOfLastQuestion)
-    );
+    if (questions) {
+      setCurrentQuestions(
+        questions.slice(indexOfFirstQuestion, indexOfLastQuestion)
+      );
+    }
     window.scrollTo(0, 0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, questions]);
 
   const handleNextClick = () => {
-    setCurrentPage(prev => prev + 1);
+    setCurrentPage((prev) => prev + 1);
   };
   const handlePrevClick = () => {
-    setCurrentPage(prev => prev - 1);
+    setCurrentPage((prev) => prev - 1);
   };
 
   return (
@@ -67,8 +67,15 @@ const StartQuiz = () => {
           </Button>
         )}
         <Header />
-        <Timer totalTime={totalTime} />
-        {currentQuestions.length === 0 && (
+        {currentQuestions.length > 0 && totalTime && (
+          <Timer totalTime={totalTime} />
+        )}
+        {currentQuestions.length > 0 && totalQuestions && (
+          <Heading as="h4" mt={5} textAlign="center" fontSize="medium">
+            Total questions: {totalQuestions}
+          </Heading>
+        )}
+        {(isLoading || currentQuestions.length === 0) && (
           <Spinner
             color="appPurple.500"
             size="xl"
@@ -81,7 +88,7 @@ const StartQuiz = () => {
             margin="auto"
           />
         )}
-        {currentQuestions.map(question => (
+        {currentQuestions.map((question) => (
           <Question key={question.id} question={question} />
         ))}
         <Flex justify="space-between" mt={24}>

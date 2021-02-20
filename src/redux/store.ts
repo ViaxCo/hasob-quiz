@@ -1,20 +1,15 @@
 import { configureStore } from "@reduxjs/toolkit";
-import quizReducer, { QuizSlice } from "./features/quiz/quizSlice";
-import userReducer, { UserSlice } from "./features/user/userSlice";
-
-// State type
-export type State = {
-  quiz: QuizSlice;
-  user: UserSlice;
-};
+import quizReducer from "./features/quiz/quizSlice";
+import userReducer from "./features/user/userSlice";
 
 const store = configureStore({
   reducer: {
     quiz: quizReducer,
-    user: userReducer,
-  },
+    user: userReducer
+  }
   // devTools: false
 });
 
+export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
 export default store;

@@ -1,14 +1,22 @@
-import { Box, Flex, Heading, Text, Link, Button } from "@chakra-ui/react";
+import {
+  Box,
+  Flex,
+  Heading,
+  Text,
+  Link,
+  Button,
+  Spinner
+} from "@chakra-ui/react";
 import { Header } from "../components";
 import { Link as RouterLink } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { State } from "../redux/store";
+import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { logout } from "../redux/features/user/userSlice";
 import { history } from "../utils";
 
 const Home = () => {
-  const { isAuthenticated } = useSelector((state: State) => state.user);
-  const dispatch = useDispatch();
+  const { isAuthenticated } = useAppSelector((state) => state.user);
+  const { isLoading } = useAppSelector((state) => state.quiz);
+  const dispatch = useAppDispatch();
   return (
     <Flex direction="column" minH="100vh" align="center" justify="center" p={3}>
       <Box maxW="540px" w="100%">
@@ -40,47 +48,62 @@ const Home = () => {
           </Flex>
         )}
         <Header />
-        {isAuthenticated && (
-          <Box
-            bg="blackAlpha.200"
-            borderLeft="7px solid"
-            borderColor="appPurple.600"
-            rounded="2xl"
-            p={6}
-            mt={10}
-            textAlign="center"
-          >
-            <Link
-              as={RouterLink}
-              to="/start-quiz"
-              _hover={{ textDecoration: "none" }}
+        {isLoading ? (
+          <Spinner
+            color="appPurple.500"
+            size="xl"
+            thickness="4px"
+            position="absolute"
+            top="50%"
+            left="0"
+            bottom="0"
+            right="0"
+            margin="auto"
+          />
+        ) : (
+          isLoading === false &&
+          isAuthenticated && (
+            <Box
+              bg="blackAlpha.200"
+              borderLeft="7px solid"
+              borderColor="appPurple.600"
+              rounded="2xl"
+              p={6}
+              mt={10}
+              textAlign="center"
             >
-              <Heading
-                textDecoration="underline"
-                fontSize="3xl"
-                color="appPurple.500"
-                mb={4}
+              <Link
+                as={RouterLink}
+                to="/start-quiz"
+                _hover={{ textDecoration: "none" }}
               >
-                Start Quiz
-              </Heading>
-            </Link>
-            <Text>
-              This is a timed quiz consisting of 10 questions.
-              <br />
-              You are required to complete the quiz within ten(10) minutes
-              before the page times off.
-              <br />
-              If you fail to complete the quiz before the allotted time,the quiz
+                <Heading
+                  textDecoration="underline"
+                  fontSize="3xl"
+                  color="appPurple.500"
+                  mb={4}
+                >
+                  Start Quiz
+                </Heading>
+              </Link>
+              <Text>
+                This is a timed quiz consisting of 10 questions.
+                <br />
+                You are required to complete the quiz within ten(10) minutes
+                before the page times off.
+                <br />
+                If you fail to complete the quiz before the allotted time,the quiz
               will time off at the end of the allotted time, thereby ending the
               quiz abrubtly and rendering your attempt invalid.
-              <br />
-              <br />
-              When you are ready, click on the "Start Quiz" link above to
-              commence the quiz.
-              <br />
-              Good luck!
-            </Text>
-          </Box>
+                <br />
+                <br />
+                When you are ready, click on the "Start Quiz" link above to
+                commence the quiz.
+                <br />
+                Good luck!
+              </Text>
+            </Box>
+          )
         )}
       </Box>
     </Flex>

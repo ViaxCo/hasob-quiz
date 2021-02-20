@@ -1,7 +1,8 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { history, setAuthToken } from "../../../utils";
 import axios from "axios";
 import { AppDispatch } from "../../store";
+import { resetQuiz } from "../quiz/quizSlice";
 
 // User type
 type User = {
@@ -19,78 +20,95 @@ type NewUser = {
 };
 
 // Slice type
-export type UserSlice = {
+type UserSliceState = {
   isAuthenticated: boolean;
-  role: "Admin" | "User";
+  role: "Admin" | "User" | "";
 };
+
+const initialState: UserSliceState = {
+  isAuthenticated: false,
+  role: ""
+};
+
+export const login = createAsyncThunk(
+  "user/login",
+  async (user: User, { rejectWithValue }) => {
+    try {
+      const res = await axios.post(
+        "https://hasquiz-api.herokuapp.com/api/auth/login",
+        user
+      );
+      const token = res.data.data.accessToken;
+      localStorage.setItem("jwtToken", token);
+      setAuthToken(token);
+      const { role } = res.data.data.user;
+      localStorage.setItem("role", role);
+      if (role === "Admin") {
+        history.push("/questions");
+      }
+      if (role === "User") {
+        history.push("/");
+      }
+      return role as typeof initialState.role;
+    } catch (error) {
+      console.log({ ...error });
+      if (!error.response) throw error;
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
+export const signup = createAsyncThunk(
+  "user/signup",
+  async (user: NewUser, { rejectWithValue }) => {
+    try {
+      await axios.post(
+        "https://hasquiz-api.herokuapp.com/api/auth/register",
+        user
+      );
+      history.push("/login");
+    } catch (error) {
+      console.log({ ...error });
+      if (!error.response) throw error;
+      return rejectWithValue(error.response.data.email[0]);
+    }
+  }
+);
 
 const userSlice = createSlice({
   name: "user",
-  initialState: {
-    isAuthenticated: false,
-    role: "",
-  },
+  initialState,
   reducers: {
-    setCurrentUser(state, action) {
-      if (action.payload) {
-        state.isAuthenticated = true;
-      } else {
-        state.isAuthenticated = false;
-      }
-      state.role = action.payload;
+    setCurrentUser(
+      state,
+      { payload: role }: PayloadAction<typeof initialState.role>
+    ) {
+      state.isAuthenticated = true;
+      state.role = role;
     },
+    logoutCurrentUser(state, action: PayloadAction<undefined>) {
+      state.isAuthenticated = false;
+      state.role = "";
+    }
   },
+  extraReducers: (builder) => {
+    // login
+    builder.addCase(login.fulfilled, (state, { payload: role }) => {
+      state.isAuthenticated = true;
+      state.role = role;
+    });
+  }
 });
 
-export const login = (user: User) => async (dispatch: AppDispatch) => {
-  try {
-    const res = await axios.post(
-      "https://hasquiz-api.herokuapp.com/api/auth/login",
-      user
-    );
-    const token = res.data.data.accessToken;
-    localStorage.setItem("jwtToken", token);
-    setAuthToken(token);
-    const role = res.data.data.user.role;
-    localStorage.setItem("role", role);
-    if (role === "Admin") {
-      dispatch(setCurrentUser(role));
-      history.push("/questions");
-    }
-    if (role === "User") {
-      dispatch(setCurrentUser(role));
-      history.push("/");
-    }
-  } catch (error) {
-    console.log(error.message);
-    if (error.response.status === 401) {
-      return { error: error.message };
-    }
-  }
-};
-
-export const signup = (user: NewUser) => async () => {
-  try {
-    const res = await axios.post(
-      "https://hasquiz-api.herokuapp.com/api/auth/register",
-      user
-    );
-    if (res.data.message === "User successfully registered")
-      return { message: res.data.message };
-  } catch (error) {
-    if (error.response.data.email.length > 0) {
-      return { error: error.response.data.email[0] };
-    }
-  }
-};
+export const { setCurrentUser, logoutCurrentUser } = userSlice.actions;
 
 export const logout = () => (dispatch: AppDispatch) => {
   localStorage.removeItem("jwtToken");
   localStorage.removeItem("role");
   setAuthToken("");
-  dispatch(setCurrentUser(""));
+  dispatch(logoutCurrentUser());
+  dispatch(resetQuiz());
   history.push("/login");
 };
 
-export const { setCurrentUser } = userSlice.actions;
 export default userSlice.reducer;

@@ -1,4 +1,4 @@
-import { useSelector } from "react-redux";
+import { useAppSelector } from "./redux/hooks";
 import { Router, Redirect, Route, Switch } from "react-router-dom";
 import {
   CreateQuestion,
@@ -6,13 +6,12 @@ import {
   Login,
   Questions,
   Signup,
-  StartQuiz,
+  StartQuiz
 } from "./pages";
-import { State } from "./redux/store";
 import { history } from "./utils";
 
 const App = () => {
-  const { isAuthenticated, role } = useSelector((state: State) => state.user);
+  const { isAuthenticated, role } = useAppSelector((state) => state.user);
 
   return (
     <Router history={history}>

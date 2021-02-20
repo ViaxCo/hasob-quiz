@@ -14,14 +14,14 @@ import {
   Stack,
   Text,
   useToast,
-  VStack,
+  VStack
 } from "@chakra-ui/react";
 import {
   Formik,
   Form as FormikForm,
   Field,
   FormikHelpers,
-  FieldProps,
+  FieldProps
 } from "formik";
 import { FaFacebook } from "react-icons/fa";
 import { BiExit } from "react-icons/bi";
@@ -30,8 +30,9 @@ import { useState } from "react";
 import * as Yup from "yup";
 import { Link as RouterLink } from "react-router-dom";
 import { capitalizeFirstLetter, history } from "../utils";
-import { useDispatch } from "react-redux";
+import { useAppDispatch } from "../redux/hooks";
 import { signup } from "../redux/features/user/userSlice";
+import { unwrapResult } from "@reduxjs/toolkit";
 
 // Give the components chakra props
 export const FbIcon = chakra(FaFacebook);
@@ -54,7 +55,7 @@ const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const toast = useToast();
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const validationSchema = Yup.object({
     firstName: Yup.string()
@@ -69,7 +70,7 @@ const Signup = () => {
       .required("Required"),
     confirmPassword: Yup.string()
       .oneOf([Yup.ref("password"), null], "Passwords must match")
-      .required("Required"),
+      .required("Required")
   });
 
   const handleSubmit = async (
@@ -83,28 +84,39 @@ const Signup = () => {
       lastName,
       email: values.email,
       password: values.password,
-      password_confirmation: values.confirmPassword,
+      password_confirmation: values.confirmPassword
     };
-    const res: any = await dispatch(signup(newUser));
-    if (res.message) {
+    try {
+      const res = await dispatch(signup(newUser));
+      unwrapResult(res);
       toast({
         title: "Successfully registered",
         status: "success",
         duration: 2500,
         isClosable: true,
-        position: "top",
+        position: "top"
       });
-      history.push("/login");
-    }
-    if (res.error) {
-      toast({
-        title: res.error,
-        status: "error",
-        duration: 2500,
-        isClosable: true,
-        position: "top",
-      });
-      actions.setSubmitting(false);
+    } catch (error) {
+      console.log(error);
+      if (error === "The email has already been taken.") {
+        toast({
+          title: error,
+          status: "error",
+          duration: 2500,
+          isClosable: true,
+          position: "top"
+        });
+        actions.setSubmitting(false);
+      } else {
+        toast({
+          title: "An error occurred",
+          status: "error",
+          duration: 2500,
+          isClosable: true,
+          position: "top"
+        });
+        actions.setSubmitting(false);
+      }
     }
   };
 
@@ -115,12 +127,12 @@ const Signup = () => {
         lastName: "",
         email: "",
         password: "",
-        confirmPassword: "",
+        confirmPassword: ""
       }}
       onSubmit={handleSubmit}
       validationSchema={validationSchema}
     >
-      {props => (
+      {(props) => (
         <Center minH="100vh" minW="100vw">
           <Form
             action="/"
@@ -174,7 +186,7 @@ const Signup = () => {
                         type="firstName"
                         placeholder="First Name"
                         _placeholder={{
-                          color: "gray.600",
+                          color: "gray.600"
                         }}
                         bg="blackAlpha.200"
                         py={6}
@@ -201,7 +213,7 @@ const Signup = () => {
                         type="lastName"
                         placeholder="Last Name"
                         _placeholder={{
-                          color: "gray.600",
+                          color: "gray.600"
                         }}
                         bg="blackAlpha.200"
                         py={6}
@@ -229,7 +241,7 @@ const Signup = () => {
                       type="email"
                       placeholder="Email Address"
                       _placeholder={{
-                        color: "gray.600",
+                        color: "gray.600"
                       }}
                       bg="blackAlpha.200"
                       py={6}
@@ -255,7 +267,7 @@ const Signup = () => {
                         type={showPassword ? "text" : "password"}
                         placeholder="Password"
                         _placeholder={{
-                          color: "gray.600",
+                          color: "gray.600"
                         }}
                         bg="blackAlpha.200"
                         py={6}
@@ -301,7 +313,7 @@ const Signup = () => {
                         type={showConfirmPassword ? "text" : "password"}
                         placeholder="Confirm Password"
                         _placeholder={{
-                          color: "gray.600",
+                          color: "gray.600"
                         }}
                         bg="blackAlpha.200"
                         py={6}
