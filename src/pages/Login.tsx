@@ -15,14 +15,14 @@ import {
   Link,
   Text,
   useToast,
-  VStack,
+  VStack
 } from "@chakra-ui/react";
 import {
   Formik,
   Form as FormikForm,
   Field,
   FieldProps,
-  FormikHelpers,
+  FormikHelpers
 } from "formik";
 import { FaFacebook } from "react-icons/fa";
 import { BiExit } from "react-icons/bi";
@@ -30,8 +30,9 @@ import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 import { useState } from "react";
 import * as Yup from "yup";
 import { Link as RouterLink } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useAppDispatch } from "../redux/hooks";
 import { login } from "../redux/features/user/userSlice";
+import { unwrapResult } from "@reduxjs/toolkit";
 
 // Give the components chakra props
 export const FbIcon = chakra(FaFacebook);
@@ -50,31 +51,52 @@ const InvisibleEye = chakra(AiFillEyeInvisible);
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const toast = useToast();
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const validationSchema = Yup.object({
     email: Yup.string().email("Invalid email address").required("Required"),
     password: Yup.string()
       .min(6, "Must be at least 6 characters")
-      .required("Required"),
+      .required("Required")
   });
 
   const handleSubmit = async (
     values: Values,
     actions: FormikHelpers<Values>
   ) => {
-    const res: any = await dispatch(
-      login({ email: values.email, password: values.password })
-    );
-    if (res.error) {
+    try {
+      const res = await dispatch(
+        login({ email: values.email, password: values.password })
+      );
+      unwrapResult(res);
       toast({
-        title: "The email or password you've entered is incorrect",
-        status: "error",
+        title: "Successfully logged in",
+        status: "success",
         duration: 2500,
         isClosable: true,
-        position: "top",
+        position: "top"
       });
-      actions.setSubmitting(false);
+    } catch (error) {
+      console.log({ ...error });
+      if (error.error === "Unauthorized") {
+        toast({
+          title: "The email or password you've entered is incorrect",
+          status: "error",
+          duration: 2500,
+          isClosable: true,
+          position: "top"
+        });
+        actions.setSubmitting(false);
+      } else {
+        toast({
+          title: "An error occurred",
+          status: "error",
+          duration: 2500,
+          isClosable: true,
+          position: "top"
+        });
+        actions.setSubmitting(false);
+      }
     }
   };
 
@@ -84,7 +106,7 @@ const Login = () => {
       onSubmit={handleSubmit}
       validationSchema={validationSchema}
     >
-      {props => (
+      {(props) => (
         <Center minH="100vh" minW="100vw">
           <Form
             action="/"
@@ -130,7 +152,7 @@ const Login = () => {
                       type="email"
                       placeholder="Email Address"
                       _placeholder={{
-                        color: "gray.600",
+                        color: "gray.600"
                       }}
                       bg="blackAlpha.200"
                       py={7}
@@ -156,7 +178,7 @@ const Login = () => {
                         type={showPassword ? "text" : "password"}
                         placeholder="Password"
                         _placeholder={{
-                          color: "gray.600",
+                          color: "gray.600"
                         }}
                         bg="blackAlpha.200"
                         py={7}

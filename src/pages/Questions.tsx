@@ -1,13 +1,13 @@
 import { Box, Flex, Spinner, Button } from "@chakra-ui/react";
-import { useDispatch, useSelector } from "react-redux";
+import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { Header, Question } from "../components";
 import { logout } from "../redux/features/user/userSlice";
-import { State } from "../redux/store";
 import { history } from "../utils";
 
 const Questions = () => {
-  const { questions, isLoading } = useSelector((state: State) => state.quiz);
-  const dispatch = useDispatch();
+  const { questions } = useAppSelector((state) => state.quiz.quiz);
+  const { isLoading } = useAppSelector((state) => state.quiz);
+  const dispatch = useAppDispatch();
 
   return (
     <Flex
@@ -36,9 +36,10 @@ const Questions = () => {
           </Button>
         </Flex>
         <Header />
-        {questions.map(question => (
-          <Question key={question.id} question={question} />
-        ))}
+        {questions &&
+          questions.map((question) => (
+            <Question key={question.id} question={question} />
+          ))}
         {isLoading && (
           <Spinner
             color="appPurple.500"

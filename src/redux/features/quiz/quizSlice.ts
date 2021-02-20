@@ -1,11 +1,22 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import axios from "axios";
 import { history } from "../../../utils";
 import { logout } from "../user/userSlice";
 
+// Quiz type
+type Quiz = {
+  id?: number;
+  title?: string;
+  description?: string;
+  questions?: QuestionType[];
+  totalQuestions?: number;
+  totalTime?: number;
+};
+
 // Question type
 export type QuestionType = {
   id?: number;
+  quizId?: number;
   question: string;
   answers: Answer[];
   time: number;
@@ -20,13 +31,16 @@ type Answer = {
 };
 
 // Slice type
-export type QuizSlice = {
-  title: string;
-  description: string;
-  questions: QuestionType[];
-  totalTime: number;
+type QuizSliceState = {
+  quiz: Quiz;
   isLoading: null | boolean;
   submitting: boolean;
+};
+
+const initialState: QuizSliceState = {
+  quiz: {} as Quiz,
+  isLoading: null,
+  submitting: false
 };
 
 export const getQuiz = createAsyncThunk(
@@ -37,7 +51,7 @@ export const getQuiz = createAsyncThunk(
       console.log(res);
       const { data } = res.data;
       // data = [{quiz1},{quiz2}...]
-      return data[0];
+      return data[0] as Quiz;
     } catch (error) {
       console.log({ ...error });
       if (!error.response) throw error;
@@ -56,11 +70,9 @@ export const addQuestion = createAsyncThunk(
         newQuestion
       );
       console.log(res);
-      const { question, message } = res.data;
-      if (message === "Question and answers created successfully") {
-        history.push("/questions");
-        return question;
-      }
+      const { question } = res.data;
+      history.push("/questions");
+      return question as QuestionType;
     } catch (error) {
       console.log({ ...error });
       if (!error.response) throw error;
@@ -72,30 +84,25 @@ export const addQuestion = createAsyncThunk(
 
 const quizSlice = createSlice({
   name: "quiz",
-  initialState: {
-    title: "",
-    description: "",
-    questions: [] as QuestionType[],
-    totalTime: 0,
-    isLoading: null,
-    submitting: false
-  } as QuizSlice,
-  reducers: {},
+  initialState,
+  reducers: {
+    resetQuiz(state, action: PayloadAction<undefined>) {
+      state.quiz = {};
+      state.isLoading = null;
+    }
+  },
   extraReducers: (builder) => {
     // getQuiz
     builder.addCase(getQuiz.pending, (state, action) => {
-      if (state.questions.length === 0) state.isLoading = true;
+      state.isLoading = true;
     });
     builder.addCase(getQuiz.fulfilled, (state, { payload: quiz }) => {
       state.isLoading = false;
-      state.title = quiz.title;
-      state.description = quiz.description;
-      state.questions = quiz.questions;
-      state.totalTime = quiz.totalTime;
+      state.quiz = quiz;
     });
     builder.addCase(getQuiz.rejected, (state, action) => {
-      console.log("error:", action.error);
-      console.log("error payload:", action.payload);
+      state.isLoading = null;
+      console.log(action.payload);
     });
     // addQuestion
     builder.addCase(addQuestion.pending, (state, action) => {
@@ -103,13 +110,14 @@ const quizSlice = createSlice({
     });
     builder.addCase(addQuestion.fulfilled, (state, { payload: question }) => {
       state.submitting = false;
-      state.questions.push(question);
+      state.quiz.questions?.push(question);
     });
     builder.addCase(addQuestion.rejected, (state, action) => {
-      console.log("error:", action.error);
-      console.log("error payload:", action.payload);
+      state.submitting = false;
+      console.log(action.payload);
     });
   }
 });
 
+export const { resetQuiz } = quizSlice.actions;
 export default quizSlice.reducer;

@@ -14,7 +14,7 @@ import {
   StackDivider,
   useDisclosure,
   Stack,
-  IconButton,
+  IconButton
 } from "@chakra-ui/react";
 import { useRef, useState } from "react";
 import { Header, AddTimer } from "../components";
@@ -23,9 +23,9 @@ import { AiFillHome, AiFillEdit } from "react-icons/ai";
 import { IoMdTrash } from "react-icons/io";
 import { MdTimer } from "react-icons/md";
 import { timeStringToSeconds, history } from "../utils";
-import { useDispatch, useSelector } from "react-redux";
+import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { addQuestion } from "../redux/features/quiz/quizSlice";
-import { State } from "../redux/store";
+import { unwrapResult } from "@reduxjs/toolkit";
 
 // Give component chakra props
 export const CloseIcon = chakra(GrClose);
@@ -42,17 +42,17 @@ const CreateQuestion = () => {
   const [timeString, setTimeString] = useState("");
   const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
 
   const optionInputRef = useRef<HTMLInputElement>(null);
   const questionInputRef = useRef<HTMLInputElement>(null);
 
-  const submitting = useSelector((state: State) => state.quiz.submitting);
+  const submitting = useAppSelector((state) => state.quiz.submitting);
 
-  const handleSubmit = () => {
-    const answers = options.map(option => ({
+  const handleSubmit = async () => {
+    const answers = options.map((option) => ({
       answer: option,
-      correct: radioValue === option,
+      correct: radioValue === option
     }));
     const time = timeStringToSeconds(timeString);
     if (!question) {
@@ -60,44 +60,63 @@ const CreateQuestion = () => {
         title: "Please input question",
         status: "warning",
         duration: 2500,
-        isClosable: true,
+        isClosable: true
       });
     } else if (options.length < 4) {
       toast({
         title: "Please set up to 4 options",
         status: "warning",
         duration: 2500,
-        isClosable: true,
+        isClosable: true
       });
     } else if (!radioValue) {
       toast({
         title: "Please select a correct answer",
         status: "warning",
         duration: 2500,
-        isClosable: true,
+        isClosable: true
       });
     } else if (!timeString) {
       toast({
         title: "Please set timer",
         status: "warning",
         duration: 2500,
-        isClosable: true,
+        isClosable: true
       });
     } else if (time === 0) {
       toast({
         title: "Please set timer of at least 1 second",
         status: "warning",
         duration: 2500,
-        isClosable: true,
+        isClosable: true
       });
     } else {
-      dispatch(
-        addQuestion({
-          question,
-          answers,
-          time,
-        })
-      );
+      try {
+        const res = await dispatch(
+          addQuestion({
+            question,
+            answers,
+            time
+          })
+        );
+        unwrapResult(res);
+        toast({
+          title: "Question created successfully",
+          status: "success",
+          duration: 2500,
+          isClosable: true,
+          position: "top"
+        });
+      } catch (error) {
+        console.log(error);
+        toast({
+          title: "An error occurred",
+          status: "error",
+          duration: 2500,
+          isClosable: true,
+          position: "top"
+        });
+      }
     }
   };
 
@@ -140,11 +159,11 @@ const CreateQuestion = () => {
                 borderColor="gray.600"
                 _placeholder={{
                   color: "gray.600",
-                  opacity: 1,
+                  opacity: 1
                 }}
                 value={questionInputvalue}
-                onChange={e => setQuestionInputValue(e.target.value)}
-                onKeyUp={e => {
+                onChange={(e) => setQuestionInputValue(e.target.value)}
+                onKeyUp={(e) => {
                   if (e.key === "Enter" || e.code === "13") {
                     e.preventDefault();
                     setQuestionInputValue("");
@@ -198,17 +217,17 @@ const CreateQuestion = () => {
               borderColor="gray.600"
               _placeholder={{
                 color: "gray.600",
-                opacity: 1,
+                opacity: 1
               }}
               value={optionsInputvalue}
-              onChange={e => setOptionsInputValue(e.target.value)}
-              onKeyUp={e => {
+              onChange={(e) => setOptionsInputValue(e.target.value)}
+              onKeyUp={(e) => {
                 if (
                   (e.key === "Enter" || e.code === "13") &&
                   options.length < 4
                 ) {
                   e.preventDefault();
-                  setOptions(prev => [...prev, optionsInputvalue]);
+                  setOptions((prev) => [...prev, optionsInputvalue]);
                   setOptionsInputValue("");
                 }
                 if (
@@ -221,7 +240,7 @@ const CreateQuestion = () => {
                     title: "You cannot add more than 4 options",
                     status: "warning",
                     duration: 2500,
-                    isClosable: true,
+                    isClosable: true
                   });
                 }
               }}
@@ -275,8 +294,8 @@ const CreateQuestion = () => {
               _hover={{
                 color: "appPurple.500",
                 ".icons": {
-                  color: "appPurple.500",
-                },
+                  color: "appPurple.500"
+                }
               }}
               transition="none"
               flexDirection="column"
@@ -294,8 +313,8 @@ const CreateQuestion = () => {
               _hover={{
                 color: "appPurple.500",
                 ".icons": {
-                  color: "appPurple.500",
-                },
+                  color: "appPurple.500"
+                }
               }}
               transition="none"
               flexDirection="column"
@@ -316,8 +335,8 @@ const CreateQuestion = () => {
               _hover={{
                 color: "appPurple.500",
                 ".icons": {
-                  color: "appPurple.500",
-                },
+                  color: "appPurple.500"
+                }
               }}
               transition="none"
               flexDirection="column"

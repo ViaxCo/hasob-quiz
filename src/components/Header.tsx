@@ -1,19 +1,30 @@
-import { Box, Heading, Text } from "@chakra-ui/react";
+import { Box, Heading, Text, useToast } from "@chakra-ui/react";
 import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { getQuiz } from "../redux/features/quiz/quizSlice";
-import { State } from "../redux/store";
+import { unwrapResult } from "@reduxjs/toolkit";
 const Header = () => {
-  const { title, description, isLoading } = useSelector(
-    (state: State) => state.quiz
-  );
-  const isAuthenticated = useSelector(
-    (state: State) => state.user.isAuthenticated
-  );
-  const dispatch = useDispatch();
+  const { title, description } = useAppSelector((state) => state.quiz.quiz);
+  const { isLoading } = useAppSelector((state) => state.quiz);
+  const isAuthenticated = useAppSelector((state) => state.user.isAuthenticated);
+  const dispatch = useAppDispatch();
+  const toast = useToast();
 
   useEffect(() => {
-    if (isAuthenticated && isLoading === null) dispatch(getQuiz());
+    if (isAuthenticated && isLoading === null)
+      dispatch(getQuiz())
+        .then(unwrapResult)
+        .catch((error) => {
+          console.log(error);
+          toast({
+            title: "An error occurred",
+            status: "error",
+            duration: 2500,
+            isClosable: true,
+            position: "top"
+          });
+        });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch, isLoading, isAuthenticated]);
 
   return (
