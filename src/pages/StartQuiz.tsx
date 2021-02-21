@@ -1,5 +1,4 @@
 import {
-  Box,
   Button,
   chakra,
   Divider,
@@ -12,14 +11,17 @@ import {
   useDisclosure
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-import { Header, Question, Timer, SubmittingOverlay } from "../components";
+import {
+  Header,
+  Question,
+  Timer,
+  SubmittingOverlay,
+  Container
+} from "../components";
 import { BiArrowBack } from "react-icons/bi";
-import { useAppSelector } from "../redux/hooks";
-import { QuestionType } from "../redux/features/quiz/quizSlice";
-import { useAppDispatch } from "../redux/hooks";
-import { submitQuiz } from "../redux/features/quiz/quizSlice";
+import { useAppDispatch, useAppSelector } from "../redux/hooks";
+import { QuestionType, submitQuiz } from "../redux/features/quiz/quizSlice";
 import { unwrapResult } from "@reduxjs/toolkit";
-import { useHistory } from "react-router-dom";
 
 export interface UserAnswer {
   questionId: number;
@@ -33,8 +35,7 @@ const StartQuiz = () => {
   const { questions, totalQuestions, totalTime } = useAppSelector(
     (state) => state.quiz.quiz
   );
-  const { isLoading } = useAppSelector((state) => state.quiz);
-  const history = useHistory();
+  const isLoading = useAppSelector((state) => state.quiz.isLoading);
   const toast = useToast();
   const dispatch = useAppDispatch();
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -131,98 +132,89 @@ const StartQuiz = () => {
   };
 
   return (
-    <Flex
-      direction="column"
-      minH="100vh"
-      align="center"
-      justify="center"
-      py={12}
-      px={4}
-    >
-      <Box maxW="540px" w="100%">
-        {currentPage > 1 && (
-          <Button variant="link" mb={6} onClick={handlePrevClick}>
-            <BackArrow color="appPurple.500" mr={2} fontSize="lg" />
-            Back
+    <Container>
+      {currentPage > 1 && (
+        <Button variant="link" mb={6} onClick={handlePrevClick}>
+          <BackArrow color="appPurple.500" mr={2} fontSize="lg" />
+          Back
+        </Button>
+      )}
+      <Header />
+      {currentQuestions.length > 0 && totalTime && (
+        <Timer totalTime={totalTime} submit={submit} />
+      )}
+      {currentQuestions.length > 0 && totalQuestions && (
+        <Heading as="h4" mt={5} textAlign="center" fontSize="medium">
+          Total questions: {totalQuestions}
+        </Heading>
+      )}
+      {(isLoading || currentQuestions.length === 0) && (
+        <Spinner
+          color="appPurple.500"
+          size="xl"
+          thickness="4px"
+          position="absolute"
+          top="25%"
+          left="0"
+          bottom="0"
+          right="0"
+          margin="auto"
+        />
+      )}
+      {currentQuestions.map((question) => (
+        <Question
+          key={question.id}
+          question={question}
+          setCurrentAnswer={setCurrentAnswer}
+          userAnswers={userAnswers}
+        />
+      ))}
+      <Flex justify="space-between" mt={24}>
+        <Text fontWeight="semibold">
+          Page {currentPage} of {totalPages}
+        </Text>
+        <HStack>
+          {currentPage > 1 && (
+            <>
+              <Button
+                variant="link"
+                fontWeight="semibold"
+                color="appPurple.500"
+                onClick={handlePrevClick}
+              >
+                Prev
+              </Button>
+              <Divider
+                orientation="vertical"
+                border="2px solid"
+                borderColor="blackAlpha.300"
+              />
+            </>
+          )}
+          {currentPage !== totalPages && (
+            <>
+              <Button
+                variant="link"
+                fontWeight="semibold"
+                color="appPurple.500"
+                onClick={handleNextClick}
+              >
+                Next
+              </Button>
+              <Divider
+                orientation="vertical"
+                border="2px solid"
+                borderColor="blackAlpha.300"
+              />
+            </>
+          )}
+          <Button variant="link" onClick={handleSubmit}>
+            Submit
           </Button>
-        )}
-        <Header />
-        {currentQuestions.length > 0 && totalTime && (
-          <Timer totalTime={totalTime} submit={submit} />
-        )}
-        {currentQuestions.length > 0 && totalQuestions && (
-          <Heading as="h4" mt={5} textAlign="center" fontSize="medium">
-            Total questions: {totalQuestions}
-          </Heading>
-        )}
-        {(isLoading || currentQuestions.length === 0) && (
-          <Spinner
-            color="appPurple.500"
-            size="xl"
-            thickness="4px"
-            position="absolute"
-            top="25%"
-            left="0"
-            bottom="0"
-            right="0"
-            margin="auto"
-          />
-        )}
-        {currentQuestions.map((question) => (
-          <Question
-            key={question.id}
-            question={question}
-            setCurrentAnswer={setCurrentAnswer}
-            userAnswers={userAnswers}
-          />
-        ))}
-        <Flex justify="space-between" mt={24}>
-          <Text fontWeight="semibold">
-            Page {currentPage} of {totalPages}
-          </Text>
-          <HStack>
-            {currentPage > 1 && (
-              <>
-                <Button
-                  variant="link"
-                  fontWeight="semibold"
-                  color="appPurple.500"
-                  onClick={handlePrevClick}
-                >
-                  Prev
-                </Button>
-                <Divider
-                  orientation="vertical"
-                  border="2px solid"
-                  borderColor="blackAlpha.300"
-                />
-              </>
-            )}
-            {currentPage !== totalPages && (
-              <>
-                <Button
-                  variant="link"
-                  fontWeight="semibold"
-                  color="appPurple.500"
-                  onClick={handleNextClick}
-                >
-                  Next
-                </Button>
-                <Divider
-                  orientation="vertical"
-                  border="2px solid"
-                  borderColor="blackAlpha.300"
-                />
-              </>
-            )}
-            <Button variant="link" onClick={handleSubmit}>
-              Submit
-            </Button>
-            <SubmittingOverlay isOpen={isOpen} onClose={onClose} />
-          </HStack>
-        </Flex>
-      </Box>
-    </Flex>
+          <SubmittingOverlay isOpen={isOpen} onClose={onClose} />
+        </HStack>
+      </Flex>
+    </Container>
   );
 };
 

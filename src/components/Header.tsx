@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { getQuiz } from "../redux/features/quiz/quizSlice";
 import { unwrapResult } from "@reduxjs/toolkit";
+
 const Header = () => {
   const { title, description } = useAppSelector((state) => state.quiz.quiz);
   const isLoading = useAppSelector((state) => state.quiz.isLoading);
