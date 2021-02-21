@@ -30,7 +30,7 @@ const Question = ({ question, setCurrentAnswer, userAnswers }: Props) => {
         const selectedAnswer = question.answers.find(
           (answer) => answer.id === currentAnswer.selectedAnswer
         );
-        setValue(selectedAnswer.answer);
+        if (selectedAnswer) setValue(selectedAnswer.answer);
       }
     }
   }, [question, userAnswers, isAuthenticated, role]);
