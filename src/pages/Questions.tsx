@@ -5,8 +5,8 @@ import { logout } from "../redux/features/user/userSlice";
 import { history } from "../utils";
 
 const Questions = () => {
-  const { questions } = useAppSelector((state) => state.quiz.quiz);
-  const { isLoading } = useAppSelector((state) => state.quiz);
+  const questions = useAppSelector((state) => state.quiz.quiz.questions);
+  const isLoading = useAppSelector((state) => state.quiz.isLoading);
   const dispatch = useAppDispatch();
 
   return (

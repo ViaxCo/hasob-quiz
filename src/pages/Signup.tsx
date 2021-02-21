@@ -29,7 +29,7 @@ import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 import { useState } from "react";
 import * as Yup from "yup";
 import { Link as RouterLink } from "react-router-dom";
-import { capitalizeFirstLetter, history } from "../utils";
+import { capitalizeFirstLetter } from "../utils";
 import { useAppDispatch } from "../redux/hooks";
 import { signup } from "../redux/features/user/userSlice";
 import { unwrapResult } from "@reduxjs/toolkit";
