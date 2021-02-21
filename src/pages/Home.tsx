@@ -11,12 +11,29 @@ import { Header } from "../components";
 import { Link as RouterLink } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { logout } from "../redux/features/user/userSlice";
-import { history } from "../utils";
+import { history, secondsToTimeString } from "../utils";
+import { useEffect, useState } from "react";
 
 const Home = () => {
   const { isAuthenticated } = useAppSelector((state) => state.user);
   const { isLoading } = useAppSelector((state) => state.quiz);
+  const { totalQuestions, totalTime } = useAppSelector(
+    (state) => state.quiz.quiz
+  );
   const dispatch = useAppDispatch();
+
+  const [minutes, setMinutes] = useState(0);
+  const [hours, setHours] = useState(0);
+
+  useEffect(() => {
+    if (totalTime) {
+      const totalTimeString = secondsToTimeString(totalTime);
+      const timeStringArray = totalTimeString.split(":");
+      setMinutes(+timeStringArray[1]);
+      setHours(+timeStringArray[0]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [totalTime]);
   return (
     <Flex direction="column" minH="100vh" align="center" justify="center" p={3}>
       <Box maxW="540px" w="100%">
@@ -87,18 +104,23 @@ const Home = () => {
                 </Heading>
               </Link>
               <Text>
-                This is a timed quiz consisting of 10 questions.
+                This is a timed quiz consisting of{" "}
+                <b>{totalQuestions} questions.</b>
                 <br />
-                You are required to complete the quiz within ten(10) minutes
+                You are required to complete the quiz within{" "}
+                <b>
+                  {hours > 1 ? `${hours} hours` : null}{" "}
+                  {minutes > 1 ? `${minutes} minutes` : null}
+                </b>{" "}
                 before the page times off.
                 <br />
-                If you fail to complete the quiz before the allotted time,the quiz
-              will time off at the end of the allotted time, thereby ending the
-              quiz abrubtly and rendering your attempt invalid.
+                If you fail to complete the quiz before the allotted time,the
+                quiz will time off at the end of the allotted time, thereby
+                ending the quiz abrubtly and rendering your attempt invalid.
                 <br />
                 <br />
-                When you are ready, click on the "Start Quiz" link above to
-                commence the quiz.
+                When you are ready, click on the <b>"Start Quiz"</b> link above
+                to commence the quiz.
                 <br />
                 Good luck!
               </Text>

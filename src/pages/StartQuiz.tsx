@@ -7,13 +7,24 @@ import {
   HStack,
   Text,
   Spinner,
-  Heading
+  Heading,
+  useToast,
+  useDisclosure
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-import { Header, Question, Timer } from "../components";
+import { Header, Question, Timer, SubmittingOverlay } from "../components";
 import { BiArrowBack } from "react-icons/bi";
 import { useAppSelector } from "../redux/hooks";
 import { QuestionType } from "../redux/features/quiz/quizSlice";
+import { useAppDispatch } from "../redux/hooks";
+import { submitQuiz } from "../redux/features/quiz/quizSlice";
+import { unwrapResult } from "@reduxjs/toolkit";
+import { useHistory } from "react-router-dom";
+
+export interface UserAnswer {
+  questionId: number;
+  selectedAnswer: number;
+}
 
 // Give component chakra props
 const BackArrow = chakra(BiArrowBack);
@@ -23,6 +34,10 @@ const StartQuiz = () => {
     (state) => state.quiz.quiz
   );
   const { isLoading } = useAppSelector((state) => state.quiz);
+  const history = useHistory();
+  const toast = useToast();
+  const dispatch = useAppDispatch();
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   const questionsPerPage = 4;
   const totalPages =
@@ -30,6 +45,7 @@ const StartQuiz = () => {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [currentQuestions, setCurrentQuestions] = useState<QuestionType[]>([]);
+  const [userAnswers, setUserAnswers] = useState<UserAnswer[]>([]);
 
   useEffect(() => {
     const indexOfLastQuestion = currentPage * questionsPerPage;
@@ -50,6 +66,71 @@ const StartQuiz = () => {
     setCurrentPage((prev) => prev - 1);
   };
 
+  const setCurrentAnswer = (currentAnswer: UserAnswer) => {
+    const answer = userAnswers.find(
+      (userAnswer) => userAnswer.questionId === currentAnswer.questionId
+    );
+    if (answer) {
+      setUserAnswers((prevUserAnswers) =>
+        prevUserAnswers.map((prevUserAnswer) =>
+          prevUserAnswer.questionId === currentAnswer.questionId
+            ? {
+                ...prevUserAnswer,
+                selectedAnswer: currentAnswer.selectedAnswer
+              }
+            : prevUserAnswer
+        )
+      );
+    } else {
+      setUserAnswers((prevUserAnswers) => [...prevUserAnswers, currentAnswer]);
+    }
+  };
+
+  const submit = async () => {
+    onOpen();
+    try {
+      const res = await dispatch(
+        submitQuiz({ userAnswers, quizId: questions![0].quizId! })
+      );
+      unwrapResult(res);
+      const correctCount = res.payload;
+      onClose();
+      toast({
+        title: "Submitted!",
+        description: `You answered correctly: ${correctCount}/${totalQuestions}`,
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+        position: "top"
+      });
+      history.push("/");
+    } catch (error) {
+      console.log(error);
+      toast({
+        title: "An error occurred",
+        status: "error",
+        duration: 2500,
+        isClosable: true,
+        position: "top"
+      });
+      onClose();
+    }
+  };
+
+  const handleSubmit = () => {
+    if (userAnswers.length < totalQuestions!) {
+      toast({
+        title: "Please answer all questions before submitting",
+        status: "warning",
+        duration: 2500,
+        isClosable: true,
+        position: "top"
+      });
+    } else {
+      submit();
+    }
+  };
+
   return (
     <Flex
       direction="column"
@@ -68,7 +149,7 @@ const StartQuiz = () => {
         )}
         <Header />
         {currentQuestions.length > 0 && totalTime && (
-          <Timer totalTime={totalTime} />
+          <Timer totalTime={totalTime} submit={submit} />
         )}
         {currentQuestions.length > 0 && totalQuestions && (
           <Heading as="h4" mt={5} textAlign="center" fontSize="medium">
@@ -89,7 +170,12 @@ const StartQuiz = () => {
           />
         )}
         {currentQuestions.map((question) => (
-          <Question key={question.id} question={question} />
+          <Question
+            key={question.id}
+            question={question}
+            setCurrentAnswer={setCurrentAnswer}
+            userAnswers={userAnswers}
+          />
         ))}
         <Flex justify="space-between" mt={24}>
           <Text fontWeight="semibold">
@@ -130,7 +216,10 @@ const StartQuiz = () => {
                 />
               </>
             )}
-            <Button variant="link">Submit</Button>
+            <Button variant="link" onClick={handleSubmit}>
+              Submit
+            </Button>
+            <SubmittingOverlay isOpen={isOpen} onClose={onClose} />
           </HStack>
         </Flex>
       </Box>
