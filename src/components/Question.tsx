@@ -23,7 +23,7 @@ const Question = ({ question, setCurrentAnswer, userAnswers }: Props) => {
   
   useEffect(() => {
     if (isAuthenticated && role === "User") {
-      const currentAnswer = userAnswers.find(
+      const currentAnswer = userAnswers!.find(
         (answer) => answer.questionId === question.id
       );
       if (currentAnswer) {
