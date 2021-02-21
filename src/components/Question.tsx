@@ -75,8 +75,8 @@ const Question = ({ question, setCurrentAnswer, userAnswers }: Props) => {
                 isAuthenticated && role === "User"
                   ? (e) => {
                       setCurrentAnswer!({
-                        questionId: answer.questionId,
-                        selectedAnswer: answer.id
+                        questionId: answer.questionId!,
+                        selectedAnswer: answer.id!
                       });
                     }
                   : undefined
