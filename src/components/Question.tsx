@@ -20,7 +20,7 @@ const Question = ({ question, setCurrentAnswer, userAnswers }: Props) => {
   const [value, setValue] = useState<string | number>(
     isAuthenticated && role === "Admin" ? correctAnswer! : ""
   );
-  
+
   useEffect(() => {
     if (isAuthenticated && role === "User") {
       const currentAnswer = userAnswers!.find(
