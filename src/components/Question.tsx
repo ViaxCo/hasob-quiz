@@ -74,7 +74,7 @@ const Question = ({ question, setCurrentAnswer, userAnswers }: Props) => {
               onChange={
                 isAuthenticated && role === "User"
                   ? (e) => {
-                      setCurrentAnswer({
+                      setCurrentAnswer!({
                         questionId: answer.questionId,
                         selectedAnswer: answer.id
                       });
