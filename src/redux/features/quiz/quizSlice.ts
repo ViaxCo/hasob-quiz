@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import axios from "axios";
+import { UserAnswer } from "../../../pages/StartQuiz";
 import { history } from "../../../utils";
 import { logout } from "../user/userSlice";
 
@@ -28,6 +29,12 @@ type Answer = {
   questionId?: number;
   answer: string;
   correct?: boolean;
+};
+
+// Quiz submission type
+type QuizSubmission = {
+  userAnswers: UserAnswer[];
+  quizId: number;
 };
 
 // Slice type
@@ -82,6 +89,26 @@ export const addQuestion = createAsyncThunk(
   }
 );
 
+export const submitQuiz = createAsyncThunk(
+  "quiz/submitQuiz",
+  async (quizSubmission: QuizSubmission, { dispatch, rejectWithValue }) => {
+    try {
+      const res = await axios.post(
+        "https://hasquiz-api.herokuapp.com/api/submit",
+        quizSubmission
+      );
+      console.log(res);
+      const { correctCount } = res.data.meta;
+      return correctCount as number;
+    } catch (error) {
+      console.log({ ...error });
+      if (!error.response) throw error;
+      if (error.response.data.status === "Token is Expired") dispatch(logout());
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
 const quizSlice = createSlice({
   name: "quiz",
   initialState,
@@ -114,6 +141,10 @@ const quizSlice = createSlice({
     });
     builder.addCase(addQuestion.rejected, (state, action) => {
       state.submitting = false;
+      console.log(action.payload);
+    });
+    // submitQuiz
+    builder.addCase(submitQuiz.rejected, (state, action) => {
       console.log(action.payload);
     });
   }
