@@ -5,7 +5,7 @@ import { getQuiz } from "../redux/features/quiz/quizSlice";
 import { unwrapResult } from "@reduxjs/toolkit";
 const Header = () => {
   const { title, description } = useAppSelector((state) => state.quiz.quiz);
-  const { isLoading } = useAppSelector((state) => state.quiz);
+  const isLoading = useAppSelector((state) => state.quiz.isLoading);
   const isAuthenticated = useAppSelector((state) => state.user.isAuthenticated);
   const dispatch = useAppDispatch();
   const toast = useToast();

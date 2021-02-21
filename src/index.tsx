@@ -9,11 +9,9 @@ import theme from "./theme";
 import "focus-visible/dist/focus-visible";
 import { setAuthToken } from "./utils";
 import { setCurrentUser } from "./redux/features/user/userSlice";
-// import jwt from "jsonwebtoken";
 
 if (localStorage.jwtToken && localStorage.role) {
   setAuthToken(localStorage.jwtToken);
-  // console.log(jwt.decode(localStorage.jwtToken));
   store.dispatch(setCurrentUser(localStorage.role));
 }
 

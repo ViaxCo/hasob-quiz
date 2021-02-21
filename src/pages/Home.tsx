@@ -15,8 +15,8 @@ import { history, secondsToTimeString } from "../utils";
 import { useEffect, useState } from "react";
 
 const Home = () => {
-  const { isAuthenticated } = useAppSelector((state) => state.user);
-  const { isLoading } = useAppSelector((state) => state.quiz);
+  const isAuthenticated = useAppSelector((state) => state.user.isAuthenticated);
+  const isLoading = useAppSelector((state) => state.quiz.isLoading);
   const { totalQuestions, totalTime } = useAppSelector(
     (state) => state.quiz.quiz
   );

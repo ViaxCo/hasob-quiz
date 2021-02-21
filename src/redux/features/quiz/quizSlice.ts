@@ -99,6 +99,7 @@ export const submitQuiz = createAsyncThunk(
       );
       console.log(res);
       const { correctCount } = res.data.meta;
+      history.push("/");
       return correctCount as number;
     } catch (error) {
       console.log({ ...error });

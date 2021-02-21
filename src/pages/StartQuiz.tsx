@@ -103,7 +103,6 @@ const StartQuiz = () => {
         isClosable: true,
         position: "top"
       });
-      history.push("/");
     } catch (error) {
       console.log(error);
       toast({
