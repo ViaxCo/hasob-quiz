@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { secondsToTimeString } from "../utils";
 
 type Props = {
-  totalTime: number;
+  totalTime?: number;
   submit: () => Promise<void>;
 };
 
@@ -15,11 +15,17 @@ const Timer = ({ totalTime, submit }: Props) => {
   const [hours, setHours] = useState(1);
 
   useEffect(() => {
-    const totalTimeString = secondsToTimeString(totalTime);
-    const timeStringArray = totalTimeString.split(":");
-    setSeconds(+timeStringArray[2]);
-    setMinutes(+timeStringArray[1]);
-    setHours(+timeStringArray[0]);
+    if (totalTime) {
+      const totalTimeString = secondsToTimeString(totalTime);
+      const timeStringArray = totalTimeString.split(":");
+      setSeconds(+timeStringArray[2]);
+      setMinutes(+timeStringArray[1]);
+      setHours(+timeStringArray[0]);
+    } else {
+      setSeconds(0);
+      setMinutes(10);
+      setHours(0);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [totalTime]);
 
