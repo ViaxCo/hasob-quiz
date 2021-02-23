@@ -140,7 +140,7 @@ const StartQuiz = () => {
         </Button>
       )}
       <Header />
-      {currentQuestions.length > 0 && (
+      {currentQuestions.length > 0 && totalTime && (
         <Timer totalTime={totalTime} submit={submit} />
       )}
       {currentQuestions.length > 0 && totalQuestions && (

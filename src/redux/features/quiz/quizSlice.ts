@@ -58,7 +58,17 @@ export const getQuiz = createAsyncThunk(
       console.log(res);
       const { data } = res.data;
       // data = [{quiz1},{quiz2}...]
-      return data[0] as Quiz;
+      const quiz: Quiz = data[0];
+      if (!quiz.totalTime) {
+        if (quiz.questions!.length > 0) {
+          const newQuiz = { ...quiz };
+          const timeArray = quiz.questions!.map(question => question.time);
+          const totalTime = timeArray.reduce((a, b) => a + b, 0);
+          newQuiz.totalTime = totalTime;
+          return newQuiz;
+        }
+      }
+      return quiz;
     } catch (error) {
       console.log({ ...error });
       if (!error.response) throw error;

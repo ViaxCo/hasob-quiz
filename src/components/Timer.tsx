@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { secondsToTimeString } from "../utils";
 
 type Props = {
-  totalTime?: number;
+  totalTime: number;
   submit: () => Promise<void>;
 };
 
@@ -15,23 +15,17 @@ const Timer = ({ totalTime, submit }: Props) => {
   const [hours, setHours] = useState(1);
 
   useEffect(() => {
-    if (totalTime) {
-      const totalTimeString = secondsToTimeString(totalTime);
-      const timeStringArray = totalTimeString.split(":");
-      setSeconds(+timeStringArray[2]);
-      setMinutes(+timeStringArray[1]);
-      setHours(+timeStringArray[0]);
-    } else {
-      setSeconds(0);
-      setMinutes(10);
-      setHours(0);
-    }
+    const totalTimeString = secondsToTimeString(totalTime);
+    const timeStringArray = totalTimeString.split(":");
+    setSeconds(+timeStringArray[2]);
+    setMinutes(+timeStringArray[1]);
+    setHours(+timeStringArray[0]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [totalTime]);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (seconds > 0) setSeconds((prevSeconds) => prevSeconds - 1);
+      if (seconds > 0) setSeconds(prevSeconds => prevSeconds - 1);
       if (seconds === 0) {
         if (minutes === 0) {
           if (hours === 0) {
@@ -39,11 +33,11 @@ const Timer = ({ totalTime, submit }: Props) => {
           } else {
             setSeconds(59);
             setMinutes(59);
-            setHours((prevHours) => prevHours - 1);
+            setHours(prevHours => prevHours - 1);
           }
         } else {
           setSeconds(59);
-          setMinutes((prevMinutes) => prevMinutes - 1);
+          setMinutes(prevMinutes => prevMinutes - 1);
         }
       }
     }, 1000);
@@ -60,7 +54,7 @@ const Timer = ({ totalTime, submit }: Props) => {
             status: "warning",
             duration: 2500,
             isClosable: true,
-            position: "top"
+            position: "top",
           });
         }
       }
@@ -75,7 +69,7 @@ const Timer = ({ totalTime, submit }: Props) => {
         status: "warning",
         duration: 2500,
         isClosable: true,
-        position: "top"
+        position: "top",
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
