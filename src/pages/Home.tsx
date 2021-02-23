@@ -31,6 +31,9 @@ const Home = () => {
       const timeStringArray = totalTimeString.split(":");
       setMinutes(+timeStringArray[1]);
       setHours(+timeStringArray[0]);
+    } else {
+      setMinutes(10);
+      setHours(0);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [totalTime]);
