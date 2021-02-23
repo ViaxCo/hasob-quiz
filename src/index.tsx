@@ -7,8 +7,10 @@ import { ChakraProvider } from "@chakra-ui/react";
 import theme from "./theme";
 // Remove blue outline from buttons and links
 import "focus-visible/dist/focus-visible";
-import { setAuthToken } from "./utils";
+import { setAuthToken, setBaseUrl } from "./utils";
 import { setCurrentUser } from "./redux/features/user/userSlice";
+
+setBaseUrl("https://hasquiz-api.herokuapp.com/api/");
 
 if (localStorage.jwtToken && localStorage.role) {
   setAuthToken(localStorage.jwtToken);

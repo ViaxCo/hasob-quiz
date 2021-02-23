@@ -27,17 +27,14 @@ type UserSliceState = {
 
 const initialState: UserSliceState = {
   isAuthenticated: false,
-  role: ""
+  role: "",
 };
 
 export const login = createAsyncThunk(
   "user/login",
   async (user: User, { rejectWithValue }) => {
     try {
-      const res = await axios.post(
-        "https://hasquiz-api.herokuapp.com/api/auth/login",
-        user
-      );
+      const res = await axios.post("auth/login", user);
       const token = res.data.data.accessToken;
       localStorage.setItem("jwtToken", token);
       setAuthToken(token);
@@ -62,10 +59,7 @@ export const signup = createAsyncThunk(
   "user/signup",
   async (user: NewUser, { rejectWithValue }) => {
     try {
-      await axios.post(
-        "https://hasquiz-api.herokuapp.com/api/auth/register",
-        user
-      );
+      await axios.post("auth/register", user);
       history.push("/login");
     } catch (error) {
       console.log({ ...error });
@@ -89,15 +83,15 @@ const userSlice = createSlice({
     logoutCurrentUser(state, action: PayloadAction<undefined>) {
       state.isAuthenticated = false;
       state.role = "";
-    }
+    },
   },
-  extraReducers: (builder) => {
+  extraReducers: builder => {
     // login
     builder.addCase(login.fulfilled, (state, { payload: role }) => {
       state.isAuthenticated = true;
       state.role = role;
     });
-  }
+  },
 });
 
 export const { setCurrentUser, logoutCurrentUser } = userSlice.actions;

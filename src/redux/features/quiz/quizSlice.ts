@@ -47,14 +47,14 @@ type QuizSliceState = {
 const initialState: QuizSliceState = {
   quiz: {} as Quiz,
   isLoading: null,
-  submitting: false
+  submitting: false,
 };
 
 export const getQuiz = createAsyncThunk(
   "quiz/getQuiz",
   async (_, { dispatch, rejectWithValue }) => {
     try {
-      const res = await axios.get("https://hasquiz-api.herokuapp.com/api/quiz");
+      const res = await axios.get("quiz");
       console.log(res);
       const { data } = res.data;
       // data = [{quiz1},{quiz2}...]
@@ -72,10 +72,7 @@ export const addQuestion = createAsyncThunk(
   "quiz/addQuestion",
   async (newQuestion: QuestionType, { dispatch, rejectWithValue }) => {
     try {
-      const res = await axios.post(
-        "https://hasquiz-api.herokuapp.com/api/questions",
-        newQuestion
-      );
+      const res = await axios.post("questions", newQuestion);
       console.log(res);
       const { question } = res.data;
       history.push("/questions");
@@ -93,10 +90,7 @@ export const submitQuiz = createAsyncThunk(
   "quiz/submitQuiz",
   async (quizSubmission: QuizSubmission, { dispatch, rejectWithValue }) => {
     try {
-      const res = await axios.post(
-        "https://hasquiz-api.herokuapp.com/api/submit",
-        quizSubmission
-      );
+      const res = await axios.post("submit", quizSubmission);
       console.log(res);
       const { correctCount } = res.data.meta;
       history.push("/");
@@ -117,9 +111,9 @@ const quizSlice = createSlice({
     resetQuiz(state, action: PayloadAction<undefined>) {
       state.quiz = {};
       state.isLoading = null;
-    }
+    },
   },
-  extraReducers: (builder) => {
+  extraReducers: builder => {
     // getQuiz
     builder.addCase(getQuiz.pending, (state, action) => {
       state.isLoading = true;
@@ -148,7 +142,7 @@ const quizSlice = createSlice({
     builder.addCase(submitQuiz.rejected, (state, action) => {
       console.log(action.payload);
     });
-  }
+  },
 });
 
 export const { resetQuiz } = quizSlice.actions;
