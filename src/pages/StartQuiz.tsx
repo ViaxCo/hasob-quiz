@@ -5,10 +5,9 @@ import {
   Flex,
   HStack,
   Text,
-  Spinner,
   Heading,
   useToast,
-  useDisclosure
+  useDisclosure,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import {
@@ -16,7 +15,8 @@ import {
   Question,
   Timer,
   SubmittingOverlay,
-  Container
+  Container,
+  Spinner,
 } from "../components";
 import { BiArrowBack } from "react-icons/bi";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
@@ -33,9 +33,9 @@ const BackArrow = chakra(BiArrowBack);
 
 const StartQuiz = () => {
   const { questions, totalQuestions, totalTime } = useAppSelector(
-    (state) => state.quiz.quiz
+    state => state.quiz.quiz
   );
-  const isLoading = useAppSelector((state) => state.quiz.isLoading);
+  const isLoading = useAppSelector(state => state.quiz.isLoading);
   const toast = useToast();
   const dispatch = useAppDispatch();
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -61,29 +61,29 @@ const StartQuiz = () => {
   }, [currentPage, questions]);
 
   const handleNextClick = () => {
-    setCurrentPage((prev) => prev + 1);
+    setCurrentPage(prev => prev + 1);
   };
   const handlePrevClick = () => {
-    setCurrentPage((prev) => prev - 1);
+    setCurrentPage(prev => prev - 1);
   };
 
   const setCurrentAnswer = (currentAnswer: UserAnswer) => {
     const answer = userAnswers.find(
-      (userAnswer) => userAnswer.questionId === currentAnswer.questionId
+      userAnswer => userAnswer.questionId === currentAnswer.questionId
     );
     if (answer) {
-      setUserAnswers((prevUserAnswers) =>
-        prevUserAnswers.map((prevUserAnswer) =>
+      setUserAnswers(prevUserAnswers =>
+        prevUserAnswers.map(prevUserAnswer =>
           prevUserAnswer.questionId === currentAnswer.questionId
             ? {
                 ...prevUserAnswer,
-                selectedAnswer: currentAnswer.selectedAnswer
+                selectedAnswer: currentAnswer.selectedAnswer,
               }
             : prevUserAnswer
         )
       );
     } else {
-      setUserAnswers((prevUserAnswers) => [...prevUserAnswers, currentAnswer]);
+      setUserAnswers(prevUserAnswers => [...prevUserAnswers, currentAnswer]);
     }
   };
 
@@ -102,7 +102,7 @@ const StartQuiz = () => {
         status: "success",
         duration: 5000,
         isClosable: true,
-        position: "top"
+        position: "top",
       });
     } catch (error) {
       console.log(error);
@@ -111,7 +111,7 @@ const StartQuiz = () => {
         status: "error",
         duration: 2500,
         isClosable: true,
-        position: "top"
+        position: "top",
       });
       onClose();
     }
@@ -124,7 +124,7 @@ const StartQuiz = () => {
         status: "warning",
         duration: 2500,
         isClosable: true,
-        position: "top"
+        position: "top",
       });
     } else {
       submit();
@@ -148,20 +148,8 @@ const StartQuiz = () => {
           Total questions: {totalQuestions}
         </Heading>
       )}
-      {(isLoading || currentQuestions.length === 0) && (
-        <Spinner
-          color="appPurple.500"
-          size="xl"
-          thickness="4px"
-          position="absolute"
-          top="25%"
-          left="0"
-          bottom="0"
-          right="0"
-          margin="auto"
-        />
-      )}
-      {currentQuestions.map((question) => (
+      {(isLoading || currentQuestions.length === 0) && <Spinner />}
+      {currentQuestions.map(question => (
         <Question
           key={question.id}
           question={question}

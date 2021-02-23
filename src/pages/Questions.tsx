@@ -1,14 +1,6 @@
-import {
-  Flex,
-  Spinner,
-  Button,
-  chakra,
-  Divider,
-  HStack,
-  Text
-} from "@chakra-ui/react";
+import { Flex, Button, chakra, Divider, HStack, Text } from "@chakra-ui/react";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
-import { Header, Question, Container } from "../components";
+import { Header, Question, Container, Spinner } from "../components";
 import { logout } from "../redux/features/user/userSlice";
 import { history } from "../utils";
 import { useEffect, useState } from "react";
@@ -19,8 +11,8 @@ import { BiArrowBack } from "react-icons/bi";
 const BackArrow = chakra(BiArrowBack);
 
 const Questions = () => {
-  const questions = useAppSelector((state) => state.quiz.quiz.questions);
-  const isLoading = useAppSelector((state) => state.quiz.isLoading);
+  const questions = useAppSelector(state => state.quiz.quiz.questions);
+  const isLoading = useAppSelector(state => state.quiz.isLoading);
   const dispatch = useAppDispatch();
 
   const questionsPerPage = 4;
@@ -43,10 +35,10 @@ const Questions = () => {
   }, [currentPage, questions]);
 
   const handleNextClick = () => {
-    setCurrentPage((prev) => prev + 1);
+    setCurrentPage(prev => prev + 1);
   };
   const handlePrevClick = () => {
-    setCurrentPage((prev) => prev - 1);
+    setCurrentPage(prev => prev - 1);
   };
 
   return (
@@ -74,20 +66,8 @@ const Questions = () => {
         </Button>
       )}
       <Header />
-      {(isLoading || currentQuestions.length === 0) && (
-        <Spinner
-          color="appPurple.500"
-          size="xl"
-          thickness="4px"
-          position="absolute"
-          top="50%"
-          left="0"
-          bottom="0"
-          right="0"
-          margin="auto"
-        />
-      )}
-      {currentQuestions.map((question) => (
+      {(isLoading || currentQuestions.length === 0) && <Spinner />}
+      {currentQuestions.map(question => (
         <Question key={question.id} question={question} />
       ))}
       <Flex justify="space-between" mt={24}>

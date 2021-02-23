@@ -1,13 +1,5 @@
-import {
-  Box,
-  Flex,
-  Heading,
-  Text,
-  Link,
-  Button,
-  Spinner
-} from "@chakra-ui/react";
-import { Header, Container } from "../components";
+import { Box, Flex, Heading, Text, Link, Button } from "@chakra-ui/react";
+import { Header, Container, Spinner } from "../components";
 import { Link as RouterLink } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { logout } from "../redux/features/user/userSlice";
@@ -15,10 +7,10 @@ import { history, secondsToTimeString } from "../utils";
 import { useEffect, useState } from "react";
 
 const Home = () => {
-  const isAuthenticated = useAppSelector((state) => state.user.isAuthenticated);
-  const isLoading = useAppSelector((state) => state.quiz.isLoading);
+  const isAuthenticated = useAppSelector(state => state.user.isAuthenticated);
+  const isLoading = useAppSelector(state => state.quiz.isLoading);
   const { totalQuestions, totalTime } = useAppSelector(
-    (state) => state.quiz.quiz
+    state => state.quiz.quiz
   );
   const dispatch = useAppDispatch();
 
@@ -68,17 +60,7 @@ const Home = () => {
       )}
       <Header />
       {isLoading ? (
-        <Spinner
-          color="appPurple.500"
-          size="xl"
-          thickness="4px"
-          position="absolute"
-          top="50%"
-          left="0"
-          bottom="0"
-          right="0"
-          margin="auto"
-        />
+        <Spinner top="50%" />
       ) : (
         isLoading === false &&
         isAuthenticated && (
